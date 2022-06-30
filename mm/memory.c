@@ -76,7 +76,7 @@ int free_page_tables(unsigned long from,unsigned long size)
 	if (!from)
 		panic("Trying to free up swapper memory space");
 	size = (size + 0x3fffff) >> 22;
-	dir = (unsigned long *) ((from>>20) & 0xffc); /* _pg_dir = 0 */
+	dir = (unsigned long *) ((from>>20) & 0xffc); /* pg_dir = 0 */
 	for ( ; size-->0 ; dir++) {
 		if (!(1 & *dir))
 			continue;
@@ -126,7 +126,7 @@ int copy_page_tables(unsigned long from,unsigned long to,long size)
 
 	if ((from&0x3fffff) || (to&0x3fffff))
 		panic("copy_page_tables called with wrong alignment");
-	from_dir = (unsigned long *) ((from>>20) & 0xffc); /* _pg_dir = 0 */
+	from_dir = (unsigned long *) ((from>>20) & 0xffc); /* pg_dir = 0 */
 	to_dir = (unsigned long *) ((to>>20) & 0xffc);
 	size = ((unsigned) (size+0x3fffff)) >> 22;
 	for( ; size-->0 ; from_dir++,to_dir++) {
@@ -175,7 +175,7 @@ static unsigned long put_page(unsigned long page,unsigned long address)
 {
 	unsigned long tmp, *page_table;
 
-/* NOTE !!! This uses the fact that _pg_dir=0 */
+/* NOTE !!! This uses the fact that pg_dir=0 */
 
 	if (page < LOW_MEM || page >= HIGH_MEMORY)
 		printk("Trying to put page %p at %p\n",page,address);
@@ -205,7 +205,7 @@ unsigned long put_dirty_page(unsigned long page, unsigned long address)
 {
 	unsigned long tmp, *page_table;
 
-/* NOTE !!! This uses the fact that _pg_dir=0 */
+/* NOTE !!! This uses the fact that pg_dir=0 */
 
 	if (page < LOW_MEM || page >= HIGH_MEMORY)
 		printk("Trying to put page %p at %p\n",page,address);

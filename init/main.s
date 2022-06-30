@@ -4,7 +4,7 @@ gcc_compiled.:
 LC0:
 	.ascii "out of memory\12\15\0"
 	.align 4
-_sprintf:
+sprintf:
 	movl 4(%esp),%edx
 	leal 12(%esp),%eax
 	pushl %eax
@@ -265,7 +265,7 @@ _main:
 	pushl %eax
 	pushl $LC5
 	pushl $_term
-	call _sprintf
+	call sprintf
 	movl $_term,_envp+4
 	movl $_term,_envp_rc+4
 	movl $_drive_info,%edi

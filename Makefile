@@ -8,7 +8,7 @@ AS86	=as86 -0 -a
 LD86	=ld86 -0
 
 AS	=as -32
-LD	=ld -m elf_i386
+LD	=ld -m elf_i386 -e startup_32
 LDFLAGS	=-s -x -M
 CC	=gcc $(RAMDISK)
 # CFLAGS	=-Wall -O -fstrength-reduce -fomit-frame-pointer \
