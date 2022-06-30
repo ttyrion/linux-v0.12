@@ -2,7 +2,9 @@ AR	=ar
 AS	=as -32
 CC	=gcc
 LD	=ld -m elf_i386
-CFLAGS	=-Wall -O -fstrength-reduce  -fomit-frame-pointer \
+# CFLAGS	=-Wall -O -fstrength-reduce  -fomit-frame-pointer \
+# 	-fno-defer-pop  -nostdinc -m32 -fno-stack-protector -I../include
+CFLAGS	=-Wall -fstrength-reduce  -fomit-frame-pointer \
 	-fno-defer-pop  -nostdinc -m32 -fno-stack-protector -I../include
 CPP	=gcc -E -nostdinc -I../include
 

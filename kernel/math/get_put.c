@@ -101,12 +101,16 @@ __asm__("addl %0,%0 ; adcl %1,%1\n\t" \
 "addl %0,%0 ; adcl %1,%1\n\t" \
 "addl %%ecx,%0 ; adcl %%ebx,%1" \
 :"=a" (low),"=d" (high) \
-:"0" (low),"1" (high):"cx","bx")
+:"0" (low),"1" (high):) 
 
 #define ADD64(val,low,high) \
 __asm__("addl %4,%0 ; adcl $0,%1":"=r" (low),"=r" (high) \
 :"0" (low),"1" (high),"r" ((unsigned long) (val)))
 
+/* TODO:
+	get_put.c: In function ‘get_BCD’:
+	get_put.c:129:1: error: unsupported size for integer register
+*/
 void get_BCD(temp_real * tmp, struct info * info, unsigned short code)
 {
 	int k;
