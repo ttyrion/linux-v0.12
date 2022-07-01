@@ -11,7 +11,7 @@
  */
 
 .text
-.globl _rs1_interrupt,rs2_interrupt
+.globl rs1_interrupt,rs2_interrupt
 
 size	= 1024				/* must be power of two !
 					   and must match the value
@@ -31,7 +31,7 @@ startup	= 256		/* chars left in write queue when we restart it */
  * the interrupt is coming from, and take appropriate action.
  */
 .align 4
-_rs1_interrupt:
+rs1_interrupt:
 	pushl $table_list+8
 	jmp rs_int
 .align 4

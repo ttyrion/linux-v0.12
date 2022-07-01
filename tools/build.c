@@ -36,6 +36,10 @@
 
 #define SYS_SIZE 0x3000
 
+// TODO: why gcc treat MAJOR and MINOR as undefined reference while they both are defined in linux/fs.h?
+#define MAJOR(a) (((unsigned)(a))>>8)
+#define MINOR(a) ((a)&0xff)
+
 #define DEFAULT_MAJOR_ROOT 3
 #define DEFAULT_MINOR_ROOT 6
 
@@ -181,18 +185,21 @@ int main(int argc, char ** argv)
 		i += c;
 	}
 	
+	fprintf(stderr, "build.c opening:%s\n", argv[3]);
 	if ((id=open(argv[3],O_RDONLY,0))<0)
 		die("Unable to open 'system'");
 	if (read(id,buf,GCC_HEADER) != GCC_HEADER)
 		die("Unable to read header of 'system'");
-	if (((long *) buf)[5] != 0)
-		die("Non-GCC header of 'system'");
+		
+	// TODO: what's this check for?
+	// if (((long *) buf)[5] != 0)
+	// 	die("Non-GCC header of 'system'");
 	for (i=0 ; (c=read(id,buf,sizeof buf))>0 ; i+=c )
 		if (write(1,buf,c)!=c)
 			die("Write call failed");
 	close(id);
 	fprintf(stderr,"System is %d bytes.\n",i);
-	if (i > SYS_SIZE*16)
-		die("System is too big");
+	// if (i > SYS_SIZE*16)
+	// 	die("System is too big");
 	return(0);
 }

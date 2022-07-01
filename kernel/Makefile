@@ -9,7 +9,7 @@
 AR	=ar
 AS	=as -32
 LD	=ld -m elf_i386
-LDFLAGS	=-s -x
+LDFLAGS	=-s -x -L/usr/lib32
 CC	=gcc
 # CFLAGS	=-Wall -O -fstrength-reduce -fomit-frame-pointer  \
 # 	-finline-functions  -nostdinc -m32 -fno-stack-protector -I../include
