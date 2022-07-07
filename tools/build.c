@@ -119,6 +119,8 @@ int main(int argc, char ** argv)
 		die("Bad root device --- major #");
 	}
 	for (i=0;i<sizeof buf; i++) buf[i]=0;
+
+	// argv[1] : boot/bootsect
 	if ((id=open(argv[1],O_RDONLY,0))<0)
 		die("Unable to open 'boot'");
 	if (read(id,buf,MINIX_HEADER) != MINIX_HEADER)
@@ -145,11 +147,14 @@ int main(int argc, char ** argv)
 	buf[507] = (char) major_swap;
 	buf[508] = (char) minor_root;
 	buf[509] = (char) major_root;	
+
+	// 1(fd) reprents for stdout which is 'Image' here
 	i=write(1,buf,512);
 	if (i!=512)
 		die("Write call failed");
 	close (id);
 	
+	// argv[2] : boot/setup
 	if ((id=open(argv[2],O_RDONLY,0))<0)
 		die("Unable to open 'setup'");
 	if (read(id,buf,MINIX_HEADER) != MINIX_HEADER)
@@ -185,13 +190,15 @@ int main(int argc, char ** argv)
 		i += c;
 	}
 	
+	// tools/system
 	fprintf(stderr, "build.c opening:%s\n", argv[3]);
 	if ((id=open(argv[3],O_RDONLY,0))<0)
 		die("Unable to open 'system'");
 	if (read(id,buf,GCC_HEADER) != GCC_HEADER)
 		die("Unable to read header of 'system'");
 		
-	// TODO: what's this check for?
+	// check the whether the 'Entry point address' is 0x0 or not
+	// '((long *) buf)[5]' would not work on nowadays machine anymore, we can check this by using "readelf -h"
 	// if (((long *) buf)[5] != 0)
 	// 	die("Non-GCC header of 'system'");
 	for (i=0 ; (c=read(id,buf,sizeof buf))>0 ; i+=c )
