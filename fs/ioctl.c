@@ -4,14 +4,13 @@
  *  (C) 1991  Linus Torvalds
  */
 
-#include <string.h>
+/* #include <string.h>*/
 #include <errno.h>
 #include <sys/stat.h>
 
 #include <linux/sched.h>
 
 extern int tty_ioctl(int dev, int cmd, int arg);
-extern int pipe_ioctl(struct m_inode *pino, int cmd, int arg);
 
 typedef int (*ioctl_ptr)(int dev,int cmd,int arg);
 
@@ -35,8 +34,6 @@ int sys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
 
 	if (fd >= NR_OPEN || !(filp = current->filp[fd]))
 		return -EBADF;
-	if (filp->f_inode->i_pipe)
-		return (filp->f_mode&1)?pipe_ioctl(filp->f_inode,cmd,arg):-EBADF;
 	mode=filp->f_inode->i_mode;
 	if (!S_ISCHR(mode) && !S_ISBLK(mode))
 		return -EINVAL;

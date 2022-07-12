@@ -20,15 +20,14 @@
  *	 4(%esp) - %ebx
  *	 8(%esp) - %ecx
  *	 C(%esp) - %edx
- *	10(%esp) - original %eax	(-1 if not system call)
- *	14(%esp) - %fs
- *	18(%esp) - %es
- *	1C(%esp) - %ds
- *	20(%esp) - %eip
- *	24(%esp) - %cs
- *	28(%esp) - %eflags
- *	2C(%esp) - %oldesp
- *	30(%esp) - %oldss
+ *	10(%esp) - %fs
+ *	14(%esp) - %es
+ *	18(%esp) - %ds
+ *	1C(%esp) - %eip
+ *	20(%esp) - %cs
+ *	24(%esp) - %eflags
+ *	28(%esp) - %oldesp
+ *	2C(%esp) - %oldss
  */
 
 SIG_CHLD	= 17
@@ -37,15 +36,14 @@ EAX		= 0x00
 EBX		= 0x04
 ECX		= 0x08
 EDX		= 0x0C
-ORIG_EAX	= 0x10
-FS		= 0x14
-ES		= 0x18
-DS		= 0x1C
-EIP		= 0x20
-CS		= 0x24
-EFLAGS		= 0x28
-OLDESP		= 0x2C
-OLDSS		= 0x30
+FS		= 0x10
+ES		= 0x14
+DS		= 0x18
+EIP		= 0x1C
+CS		= 0x20
+EFLAGS		= 0x24
+OLDESP		= 0x28
+OLDSS		= 0x2C
 
 state	= 0		# these are offsets into the task-struct.
 counter	= 4
@@ -60,9 +58,7 @@ sa_mask = 4
 sa_flags = 8
 sa_restorer = 12
 
-nr_system_calls = 82
-
-ENOSYS = 38
+nr_system_calls = 72
 
 /*
  * Ok, I get parallel printer interrupts while using the floppy for some
@@ -72,21 +68,22 @@ ENOSYS = 38
 .globl hd_interrupt,floppy_interrupt,parallel_interrupt
 .globl device_not_available, coprocessor_error
 
-.align 4
+.align 2
 bad_sys_call:
-	pushl $-ENOSYS
-	jmp ret_from_sys_call
-.align 4
+	movl $-1,%eax
+	iret
+.align 2
 reschedule:
 	pushl $ret_from_sys_call
 	jmp schedule
-.align 4
+.align 2
 system_call:
+	cmpl $nr_system_calls-1,%eax
+	ja bad_sys_call
 	push %ds
 	push %es
 	push %fs
-	pushl %eax		# save the orig_eax
-	pushl %edx		
+	pushl %edx
 	pushl %ecx		# push %ebx,%ecx,%edx as parameters
 	pushl %ebx		# to the system call
 	movl $0x10,%edx		# set up ds,es to kernel space
@@ -94,19 +91,16 @@ system_call:
 	mov %dx,%es
 	movl $0x17,%edx		# fs points to local data space
 	mov %dx,%fs
-	cmpl NR_syscalls,%eax
-	jae bad_sys_call
 	call sys_call_table(,%eax,4)
 	pushl %eax
-2:
 	movl current,%eax
 	cmpl $0,state(%eax)		# state
 	jne reschedule
 	cmpl $0,counter(%eax)		# counter
 	je reschedule
 ret_from_sys_call:
-	movl current,%eax
-	cmpl task,%eax			# task[0] cannot have signals
+	movl current,%eax		# task[0] cannot have signals
+	cmpl task,%eax
 	je 3f
 	cmpw $0x0f,CS(%esp)		# was old code segment supervisor ?
 	jne 3f
@@ -123,25 +117,21 @@ ret_from_sys_call:
 	incl %ecx
 	pushl %ecx
 	call do_signal
-	popl %ecx
-	testl %eax, %eax
-	jne 2b		# see if we need to switch tasks, or do more signals
+	popl %eax
 3:	popl %eax
 	popl %ebx
 	popl %ecx
 	popl %edx
-	addl $4, %esp	# skip orig_eax
 	pop %fs
 	pop %es
 	pop %ds
 	iret
 
-.align 4
+.align 2
 coprocessor_error:
 	push %ds
 	push %es
 	push %fs
-	pushl $-1		# fill in -1 for orig_eax
 	pushl %edx
 	pushl %ecx
 	pushl %ebx
@@ -154,12 +144,11 @@ coprocessor_error:
 	pushl $ret_from_sys_call
 	jmp math_error
 
-.align 4
+.align 2
 device_not_available:
 	push %ds
 	push %es
 	push %fs
-	pushl $-1		# fill in -1 for orig_eax
 	pushl %edx
 	pushl %ecx
 	pushl %ebx
@@ -177,20 +166,17 @@ device_not_available:
 	pushl %ebp
 	pushl %esi
 	pushl %edi
-	pushl $0		# temporary storage for ORIG_EIP
 	call math_emulate
-	addl $4,%esp
 	popl %edi
 	popl %esi
 	popl %ebp
 	ret
 
-.align 4
+.align 2
 timer_interrupt:
 	push %ds		# save ds,es and put kernel data space
-	push %es		# into them. %fs is used by system_call
+	push %es		# into them. %fs is used by _system_call
 	push %fs
-	pushl $-1		# fill in -1 for orig_eax
 	pushl %edx		# we save %eax,%ecx,%edx as gcc doesn't
 	pushl %ecx		# save those across function calls. %ebx
 	pushl %ebx		# is saved as we use that in ret_sys_call
@@ -210,7 +196,7 @@ timer_interrupt:
 	addl $4,%esp		# task switching to accounting ...
 	jmp ret_from_sys_call
 
-.align 4
+.align 2
 sys_execve:
 	lea EIP(%esp),%eax
 	pushl %eax
@@ -218,7 +204,7 @@ sys_execve:
 	addl $4,%esp
 	ret
 
-.align 4
+.align 2
 sys_fork:
 	call find_empty_process
 	testl %eax,%eax
@@ -249,7 +235,6 @@ hd_interrupt:
 	jmp 1f			# give port chance to breathe
 1:	jmp 1f
 1:	xorl %edx,%edx
-	movl %edx,hd_timeout
 	xchgl do_hd,%edx
 	testl %edx,%edx
 	jne 1f

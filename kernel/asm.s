@@ -15,7 +15,6 @@
 .globl double_fault,coprocessor_segment_overrun
 .globl invalid_TSS,segment_not_present,stack_segment
 .globl general_protection,coprocessor_error,irq13,reserved
-.globl alignment_check
 
 divide_error:
 	pushl $do_divide_error
@@ -143,9 +142,5 @@ stack_segment:
 
 general_protection:
 	pushl $do_general_protection
-	jmp error_code
-
-alignment_check:
-	pushl $do_alignment_check
 	jmp error_code
 

@@ -4,15 +4,13 @@
  *  (C) 1991  Linus Torvalds
  */
 
-#include <string.h>
+#include <string.h> 
 #include <sys/stat.h>
 
 #include <linux/sched.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <asm/system.h>
-
-extern int *blk_size[];
 
 struct m_inode inode_table[NR_INODE]={{0,},};
 
@@ -82,7 +80,7 @@ static int _bmap(struct m_inode * inode,int block,int create)
 		panic("_bmap: block>big");
 	if (block<7) {
 		if (create && !inode->i_zone[block])
-			if (inode->i_zone[block]=new_block(inode->i_dev)) {
+			if ((inode->i_zone[block]=new_block(inode->i_dev))) {
 				inode->i_ctime=CURRENT_TIME;
 				inode->i_dirt=1;
 			}
@@ -91,7 +89,7 @@ static int _bmap(struct m_inode * inode,int block,int create)
 	block -= 7;
 	if (block<512) {
 		if (create && !inode->i_zone[7])
-			if (inode->i_zone[7]=new_block(inode->i_dev)) {
+			if ((inode->i_zone[7]=new_block(inode->i_dev))) {
 				inode->i_dirt=1;
 				inode->i_ctime=CURRENT_TIME;
 			}
@@ -101,7 +99,7 @@ static int _bmap(struct m_inode * inode,int block,int create)
 			return 0;
 		i = ((unsigned short *) (bh->b_data))[block];
 		if (create && !i)
-			if (i=new_block(inode->i_dev)) {
+			if ((i=new_block(inode->i_dev))) {
 				((unsigned short *) (bh->b_data))[block]=i;
 				bh->b_dirt=1;
 			}
@@ -110,7 +108,7 @@ static int _bmap(struct m_inode * inode,int block,int create)
 	}
 	block -= 512;
 	if (create && !inode->i_zone[8])
-		if (inode->i_zone[8]=new_block(inode->i_dev)) {
+		if ((inode->i_zone[8]=new_block(inode->i_dev))) {
 			inode->i_dirt=1;
 			inode->i_ctime=CURRENT_TIME;
 		}
@@ -120,7 +118,7 @@ static int _bmap(struct m_inode * inode,int block,int create)
 		return 0;
 	i = ((unsigned short *)bh->b_data)[block>>9];
 	if (create && !i)
-		if (i=new_block(inode->i_dev)) {
+		if ((i=new_block(inode->i_dev))) {
 			((unsigned short *) (bh->b_data))[block>>9]=i;
 			bh->b_dirt=1;
 		}
@@ -131,7 +129,7 @@ static int _bmap(struct m_inode * inode,int block,int create)
 		return 0;
 	i = ((unsigned short *)bh->b_data)[block&511];
 	if (create && !i)
-		if (i=new_block(inode->i_dev)) {
+		if ((i=new_block(inode->i_dev))) {
 			((unsigned short *) (bh->b_data))[block&511]=i;
 			bh->b_dirt=1;
 		}
@@ -158,7 +156,6 @@ void iput(struct m_inode * inode)
 		panic("iput: trying to free free inode");
 	if (inode->i_pipe) {
 		wake_up(&inode->i_wait);
-		wake_up(&inode->i_wait2);
 		if (--inode->i_count)
 			return;
 		free_page(inode->i_size);
@@ -311,13 +308,6 @@ static void read_inode(struct m_inode * inode)
 		((struct d_inode *)bh->b_data)
 			[(inode->i_num-1)%INODES_PER_BLOCK];
 	brelse(bh);
-	if (S_ISBLK(inode->i_mode)) {
-		int i = inode->i_zone[0];
-		if (blk_size[MAJOR(i)])
-			inode->i_size = 1024*blk_size[MAJOR(i)][MINOR(i)];
-		else
-			inode->i_size = 0x7fffffff;
-	}
 	unlock_inode(inode);
 }
 

@@ -12,11 +12,9 @@
  * the page directory.
  */
 .text
-/**
- .globl _idt,_gdt,_pg_dir,_tmp_floppy_area
-*/
-.globl idt,gdt,pg_dir,tmp_floppy_area, startup_32
+.globl idt,gdt,pg_dir,tmp_floppy_area
 pg_dir:
+.globl startup_32
 startup_32:
 	movl $0x10,%eax
 	mov %ax,%ds
@@ -37,6 +35,7 @@ startup_32:
 	movl %eax,0x000000	# loop forever if it isn't
 	cmpl %eax,0x100000
 	je 1b
+
 /*
  * NOTE! 486 should set bit 16, to check for write-protect in supervisor
  * mode. Then it would be unnecessary with the "verify_area()"-calls.
@@ -63,7 +62,7 @@ check_x87:
 	xorl $6,%eax		/* reset MP, set EM */
 	movl %eax,%cr0
 	ret
-.align 4
+.align 2
 1:	.byte 0xDB,0xE4		/* fsetpm for 287, ignored by 387 */
 	ret
 
@@ -149,7 +148,7 @@ L6:
 /* This is the default interrupt "handler" :-) */
 int_msg:
 	.asciz "Unknown interrupt\n\r"
-.align 4
+.align 2
 ignore_int:
 	pushl %eax
 	pushl %ecx
@@ -197,7 +196,7 @@ ignore_int:
  * some kind of marker at them (search for "16Mb"), but I
  * won't guarantee that's all :-( )
  */
-.align 4
+.align 2
 setup_paging:
 	movl $1024*5,%ecx		/* 5 pages - pg_dir+4 page tables */
 	xorl %eax,%eax
@@ -220,12 +219,12 @@ setup_paging:
 	movl %eax,%cr0		/* set paging (PG) bit */
 	ret			/* this also flushes prefetch-queue */
 
-.align 4
+.align 2
 .word 0
 idt_descr:
 	.word 256*8-1		# idt contains 256 entries
 	.long idt
-.align 4
+.align 2
 .word 0
 gdt_descr:
 	.word 256*8-1		# so does gdt (not that that's any

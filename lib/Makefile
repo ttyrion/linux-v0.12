@@ -7,22 +7,19 @@
 #
 
 AR	=ar
-AS	=as -32
-LD	=ld -m elf_i386
-LDFLAGS	=-s -x -L/usr/lib32
-CC	=gcc
-# CFLAGS	=-Wall -O -fstrength-reduce -fomit-frame-pointer  \
-# 	-finline-functions  -nostdinc -m32 -fno-stack-protector -I../include
-CFLAGS	=-Wall -fstrength-reduce -fomit-frame-pointer  \
-	-finline-functions  -nostdinc -m32 -fno-stack-protector -I../include
-
+AS	=as
+LD	=ld
+LDFLAGS	=-s -x
+CC	=gcc -mcpu=i386
+CFLAGS	=-Wall -O -fstrength-reduce -fomit-frame-pointer \
+	-finline-functions -nostdinc -I../include -fno-stack-protector
 CPP	=gcc -E -nostdinc -I../include
 
 .c.s:
 	$(CC) $(CFLAGS) \
 	-S -o $*.s $<
 .s.o:
-	$(AS) -c -o $*.o $<
+	$(AS) -o $*.o $<
 .c.o:
 	$(CC) $(CFLAGS) \
 	-c -o $*.o $<

@@ -57,8 +57,4 @@ extern int errno;
 #define ENOSYS		38
 #define ENOTEMPTY	39
 
-/* Should never be seen by user programs */
-#define ERESTARTSYS	512
-#define ERESTARTNOINTR	513
-
 #endif
